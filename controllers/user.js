@@ -11,8 +11,13 @@ exports.postLogin = async (req,h ) => {
     const { username, password } = req.payload;
     return User.findByUsernameAndPassword(username,password)
         .then((res) =>{
-            req.cookieAuth.set({username:res.username, _id:res._id});
-            return h.redirect('/contacts');
+            if(res){
+                req.cookieAuth.set({username:res.username, _id:res._id});
+                return h.redirect('/contacts');
+            }  else{
+                return h.redirect('/');
+            }
+
     }).catch((err)=>{
         console.log(err)
         return h.redirect('/');
