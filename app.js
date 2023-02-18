@@ -9,15 +9,9 @@ const Path = require('path');
 const Ejs = require('ejs');
 const routes=require('./routes/user')
 const Inert = require('@hapi/inert');
+require("dotenv").config();
 
-const users = [
-    {
-        username: 'john',
-        password: '$2a$10$iqJSHD.BGr0E2IxQwYgJmeP3NvhPrXAeLSaGCj6IR/XU5QtjVu5Tm',   // 'secret'
-        name: 'John Doe',
-        id: '2133d32a'
-    }
-];
+
 const server = Hapi.server({port: 4000 });
 
 const start = async () => {
@@ -35,23 +29,23 @@ const start = async () => {
 
     server.auth.strategy('session', 'cookie', {
         cookie: {
-            name: 'sid-example',
-            password: '!wsYhFA*C2U6nz=Bu^%A@^F#SF3&kSR6',
+            name: 'sid',
+            password:process.env.SESSION_PASSWORD,
             isSecure: false
         },
         redirectTo: '/login',
         validateFunc: async (request, session) => {
+            return User.findById(session._id)
+                .then(user=>{
+                    if (!user) {
 
-            const account = await users.find(
-                (user) => (user.id === session.id)
-            );
-
-            if (!account) {
-
-                return { valid: false };
-            }
-
-            return { valid: true, credentials: account };
+                        return { valid: false };
+                    }
+                    return { valid: true, credentials: user };
+                }).catch(err=>{
+                    console.log(err)
+                    return { valid: false };
+                })
         }
     });
 

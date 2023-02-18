@@ -2,13 +2,13 @@ const mongodb = require('mongodb')
 const getDb = require('../util/database').getDb
 
 class Contact {
-    constructor(first_name,last_name,id,userId){
-        this.first_name=title;
-        this.last_name=price;
+    constructor(first_name,last_name,id,userId,emails=[],contact_numbers=[]){
+        this.first_name=first_name;
+        this.last_name=last_name;
         this._id= id ? new mongodb.ObjectId(id):null
         this.userId= userId
-        this.emails=[];
-        this.contact_numbers=[];
+        this.emails=emails;
+        this.contact_numbers=contact_numbers;
     }
     save(){
         const db = getDb();
@@ -20,6 +20,7 @@ class Contact {
                     {$set:this}
                 )
         }else{
+
             dbOp=db.collection('contacts').insertOne(this)
         }
 
@@ -40,6 +41,21 @@ class Contact {
             .catch(err=>console.log(err))
     }
 
+    static getUserContacts(userId,search_string){
+        const db = getDb();
+        let query={userId:userId}
+        if(search_string?.length>0){
+           query={userId:userId,$or:[{first_name:search_string},{last_name:search_string}]}
+        }
+        return db.collection('contacts')
+            .find(query)
+            .toArray()
+            .then(contacts =>{
+                return contacts
+            })
+            .catch(err=>console.log(err))
+    }
+
     static findById(contactId){
         const db = getDb();
         return db.collection('products')
@@ -48,17 +64,60 @@ class Contact {
             .then(contact=>{
                 return contact;
             })
-            .catch(err=>console.log(err))
+            .catch(err=>{return err})
     }
 
     static deleteById(id){
         const db=getDb();
         return db.collection('contacts')
             .deleteOne({'_id': new mongodb.ObjectId(id)})
-            .then(()=>{
-                console.log("deleted")
+            .then((res)=>{
+                return res
             })
-            .catch(err=>console.log(err))
+            .catch(err=> {return err})
+    }
+
+    static  deleteByIds(ids){
+        const db=getDb();
+        return db.collection('contacts')
+            .deleteMany({'_id': {$in:ids}})
+            .then((res)=>{
+                return res
+            })
+            .catch(err=>{return err})
+    }
+
+
+
+    static getDuplicate(){
+        let all=[]
+        let duplicate_index=[]
+        return this.fetchAll()
+            .then(res=>{
+                let temp=res
+                res.forEach((el)=>{
+                      let filtered=temp.filter((item,ind)=>{
+                          if(
+                              (item.first_name.toLowerCase()===el.first_name.toLowerCase() && item.last_name.toLowerCase()===el.last_name.toLowerCase())||
+                              (item.last_name.toLowerCase()===el.first_name.toLowerCase() && item.first_name.toLowerCase()===el.last_name.toLowerCase())
+                          ){
+                              duplicate_index.push(ind)
+                            return true
+                          }
+                      })
+
+                    temp=temp.filter((item,idx)=>{
+                        if(!duplicate_index.includes(idx)){
+                            return true
+                        }
+                    })
+                    duplicate_index=[]
+                      if(filtered.length>1){
+                          all.push(filtered)
+                      }
+                })
+                return all
+            }).catch(err=>console.log(err))
     }
 }
 module.exports = Contact;

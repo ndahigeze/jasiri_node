@@ -1,12 +1,340 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<%- include('./includes/head.ejs') %>
 </head>
 <body>
-    
-</body>
-</html>
+<div class="container-fluid" id="app">
+ <%- include('./includes/dashboard_head.ejs') %>
+    <div class="row mt-3" >
+        <div class="col-md-4 shadow">
+            <div class="d-flex justify-content-md-start">
+                <h4 class="m-2">Contacts</h4>
+                <button class="btn btn-primary"  data-bs-toggle="modal" data-bs-target="#exampleModal">Create Contact</button>
+            </div>
+            <hr/>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" v-model="search_string" placeholder="contact first name/last name" aria-label="Recipient's username" aria-describedby="button-addon2">
+                <button class="btn btn-outline-primary mb-0" type="button" id="button-addon2" @click="get_contacts">search</button>
+            </div>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>name</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody >
+                  <tr v-for="(contact,index) in contacts" :key="contact._id" style="cursor: pointer" @click="selectContact(contact)">
+                      <td>{{index+1}}</td>
+                      <td>{{contact.last_name}} {{contact.first_name}}</td>
+                      <td>
+                          <button class="btn btn-sm btn-info m-1" @click="triggerUpdate(contact)">
+                              Update
+                          </button>
+                          <button class="btn btn-sm btn-danger m-1" @click="triggerDelete(contact)" >Delete</button>
+                      </td>
+                  </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="shadow p-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button class="btn btn-primary" @click="getDuplicates">Show duplicate contacts</button>
+                        </div>
+
+                    </div>
+                    <div class="row " v-if="selected_contact._id">
+                        <div class="col-md-12">
+                            <h5>{{selected_contact.first_name}} {{selected_contact.last_name}} Records</h5>
+                        </div>
+                        <div class="col-md-6">
+                            <div><strong>Contact Numbers</strong></div>
+                            <ul class="list-group list-group-numbered mt-1" v-if="selected_contact?.contact_numbers?.length>0">
+                               <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-start" v-for="(number) in selected_contact.contact_numbers" :key="number">
+                                   <strong>{{number}}</strong>
+                               </li>
+                            </ul>
+                            <div v-if="selected_contact?.contact_numbers?.length==0">
+                                No Numbers recorded
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div><strong>Contact Emails</strong></div>
+                            <ul class="list-group list-group-numbered mt-1" v-if="selected_contact?.emails?.length>0">
+                                <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-start" v-for="(email) in selected_contact.emails" :key="number">
+                                    <strong>{{email}}</strong>
+                                </li>
+                            </ul>
+                            <div v-if="selected_contact?.emails?.length==0">
+                                No email recorded
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="!selected_contact._id && !show_duplicate">
+                         <div>No contact selected</div>
+                    </div>
+                    <div v-if="show_duplicate">
+                        <table class="table">
+                            <thead>
+                              <tr>
+                                  <th>#</th>
+                                  <th>Duplicate</th>
+                                  <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(duplicate,index) in duplicates" :key="index" style="cursor: pointer" >
+                                <td>{{index+1}}</td>
+                                <td>
+                                    <ul class="list-group">
+                                        <li class="list-group-item" v-for="(contact,index) in duplicate" key="index">{{contact.first_name}} {{contact.last_name}} </li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-primary" @click="mergeDuplicate(duplicate)">Merge?</button>
+                                </td>
+                            </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!--    modals-->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Create Contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <label>First Name</label>
+                    <input type="text" placeholder="first name" v-model="new_contact.first_name" class="form-control">
+                    <br>
+                    <label>Last Name</label>
+                    <input type="text" placeholder="Last name" v-model="new_contact.last_name" class="form-control">
+                    <br>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="create_contact">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--Update modal-->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex justify-content-center" id="exampleModalLabel">Update Contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" v-model="new_contact._id">
+                    <label>First Name</label>
+                    <input type="text" placeholder="first name" v-model="new_contact.first_name" class="form-control">
+                    <br>
+                    <label>Last Name</label>
+                    <input type="text" placeholder="Last name" v-model="new_contact.last_name" class="form-control">
+                    <br>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeUpdateModal" @click="get_contacts()">Close</button>
+                    <button type="button" class="btn btn-primary" @click="updateContact">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Update modal-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex justify-content-center" id="exampleModalLabel">Delete Contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="d-flex justify-content-center">You are about to delete contact <strong>{{new_contact.first_name}} {{new_contact.last_name}}</strong></p>
+                    <h3 class="text-warning d-flex justify-content-center">Are you sure?</h3>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeDeleteModal">Close</button>
+                    <button type="button" class="btn btn-danger" @click="deleteContact">Confirm delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    const { createApp } = Vue
+
+    createApp({
+        data() {
+            return {
+                contacts:[],
+                selected_contact:{},
+                message:"test",
+                new_contact:{
+                    id:"",
+                    first_name:"",
+                    last_name:""
+                },
+                search_string:'',
+                duplicates:[],
+                show_duplicate:false
+            }
+        },
+        methods: {
+
+            triggerDelete:function (cont) {
+                this.new_contact=cont
+                this.triggerModal('deleteModal')
+            },
+            deleteContact:function () {
+                let vue_obj=this
+
+                axios.delete(`/delete_contact/${this.new_contact._id}`)
+                    .then(function (response) {
+                        vue_obj.get_contacts()
+                        vue_obj.closeModal('closeDeleteModal')
+                        vue_obj.showAlert('success',"Contact deleted successfully")
+                        vue_obj.new_contact={}
+                    })
+                    .catch(function (error) {
+                        vue_obj.showAlert('error',"error occured, try again")
+                    })
+            },
+
+            triggerUpdate:function (cont) {
+                this.new_contact=cont
+                this.triggerModal('updateModal')
+            },
+            updateContact:function () {
+                let vue_obj=this
+
+                axios.put('/update_contact',this.new_contact)
+                    .then(function (response) {
+                        vue_obj.get_contacts()
+                        vue_obj.closeModal('closeUpdateModal')
+                        vue_obj.showAlert('success',"Contact updated successfully")
+                        vue_obj.new_contact={}
+                    })
+                    .catch(function (error) {
+                        vue_obj.showAlert('error',"error occured, try again")
+                    })
+            },
+            create_contact:function () {
+                let vue_obj=this
+                axios.post('/create_contact',this.new_contact)
+                    .then(function (response) {
+                        vue_obj.get_contacts()
+                         vue_obj.closeModal('closeModal')
+                        vue_obj.showAlert('success',"Contact created successfully")
+                        vue_obj.new_contact={}
+                    })
+                    .catch(function (error) {
+                        vue_obj.showAlert('error',"error occured, try again")
+                    })
+            },
+
+            get_contacts:function () {
+                let vue_obj=this
+                axios.get(`/search_contacts?search_string=${this.search_string}`)
+                    .then(function (response) {
+                        vue_obj.contacts=response.data
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    })
+
+            },
+
+            getDuplicates:function () {
+                let vue_obj=this
+                axios.get(`/get_duplicates`)
+                    .then(function (response) {
+                        vue_obj.duplicates=response.data
+                        vue_obj.show_duplicate=true
+                        vue_obj.selected_contact={}
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    })
+
+            },
+
+            mergeDuplicate:function (duplicate) {
+                let vue_obj=this
+                Swal.fire({
+                        title: "Are you sure?",
+                        text: `You are about to merge all Contacts with name ${duplicate[0].first_name} ${duplicate[0].last_name}`,
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: '#DD6B55',
+                        confirmButtonText: 'Yes, I am sure!',
+                        cancelButtonText: "No, cancel it!",
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    }).then(isConfirm=> {
+                    if (isConfirm){
+                        axios.put('/merge_duplicate',duplicate)
+                            .then(function (response) {
+                                vue_obj.get_contacts()
+                                vue_obj.getDuplicates()
+                                vue_obj.showAlert('success',"Contact merged")
+                                vue_obj.new_contact={}
+                            })
+                            .catch(error=> {
+                                vue_obj.showAlert('error',"error occured, try again")
+                            })
+                    } else {
+                        e.preventDefault();
+                    }
+                })
+
+            },
+
+            selectContact:function(contact){
+                this.selected_contact=contact
+                this.show_duplicate=false
+            },
+            triggerModal:function (id) {
+                var myModal = new bootstrap.Modal(document.getElementById(id), {
+                    keyboard: false
+                })
+                myModal.toggle()
+            },
+            closeModal:function (id) {
+                document.getElementById(id).click()
+                this.get_contacts()
+            },
+
+            showAlert:function (type,message) {
+                Swal.fire({
+                    title: '',
+                    text: message,
+                    icon: type,
+                    confirmButtonText: 'Cool'
+                })
+            }
+        },
+        created(){
+         this.get_contacts()
+        }
+    }).mount('#app')
+</script>
+<%- include('./includes/end.ejs') %>
