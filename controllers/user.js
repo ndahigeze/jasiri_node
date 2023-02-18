@@ -128,3 +128,23 @@ exports.mergeDuplicate = (req,h)=>{
         })
 
 }
+
+
+exports.addNumberOrEmail=(req,h)=>{
+    const contact=req.payload
+    let new_contact = new Contact(
+        contact.first_name,
+        contact.last_name,
+        contact._id,
+        req.state.sid._id,
+        req.payload.emails,
+        req.payload.contact_numbers
+    )
+    return new_contact
+        .save()
+        .then(res=>{
+            return "success"
+        }).catch(err=> {
+            return 'errod occured'
+        })
+}

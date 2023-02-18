@@ -55,6 +55,16 @@ routes=[
         method: 'PUT',
         path: '/merge_duplicate',
         handler:controllers.mergeDuplicate
+    },
+    {
+        method: 'POST',
+        path: '/add_number',
+        handler:controllers.addNumberOrEmail
+    },
+    {
+        method: 'POST',
+        path: '/add_email',
+        handler:controllers.addNumberOrEmail
     }
 
 ]
