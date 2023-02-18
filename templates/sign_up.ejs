@@ -1,0 +1,76 @@
+<%- include('./includes/head.ejs') %>
+
+</head>
+<body>
+<div class="container-fluid" id="app">
+    <%- include('./includes/home_head.ejs') %>
+    <div class="col-md-4 offset-3 mt-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-center">Sign Up</div>
+            <div class="card-body justify-content-center">
+                <div class="text-danger" v-if="error">{{message}}</div>
+                <form @submit.prevent="create_user">
+                    <label>Email</label>
+                    <input type="text" name="username" v-model="user_data.username" class="form-control" required>
+                    <br>
+                    <label>Password</label>
+                    <input type="password" name="password" v-model="user_data.password"   class="form-control" required>
+                    <br>
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" v-model="user_data.confirm_password"  class="form-control" required>
+                    <br>
+                    <button type="submit" :disabled="user_data.confirm_password!==user_data.password || user_data.password.length===0" class="btn btn-primary" >Sign Up</button>
+                </form>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<script>
+    const { createApp } = Vue
+    createApp({
+        data(){
+            return {
+                user_data:{
+                    username:"",
+                    password:"",
+                    confirm_password:""
+                },
+                error:false,
+                message:""
+            }
+        },
+        methods:{
+
+            create_user:function () {
+                let vue_obj=this
+                axios.post('/create_account',this.user_data)
+                    .then(function (response) {
+                        console.log(response)
+                        if(response.data.exist){
+                            vue_obj.error=true
+                            vue_obj.message="Username exist"
+                        }else{
+                            location.href="/"
+                        }
+
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                        vue_obj.showAlert('error',"error occured, try again")
+                    })
+            },
+            showAlert:function (type,message) {
+                Swal.fire({
+                    title: '',
+                    text: message,
+                    icon: type,
+                    confirmButtonText: 'Cool'
+                })
+            }
+        }
+    }).mount('#app')
+</script>
+<%- include('./includes/end.ejs') %>

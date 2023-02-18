@@ -3,12 +3,29 @@ const controllers = require('../controllers/user')
 routes=[
     {
         method: 'GET',
-        path: '/login',
+        path: '/',
         options: {
             auth: false
         },
         handler:controllers.getLogin
     },
+    {
+        method: 'GET',
+        path: '/create_account',
+        options: {
+            auth: false
+        },
+        handler:controllers.getCreateAccount
+    },
+    {
+        method: 'POST',
+        path: '/create_account',
+        options: {
+            auth: false
+        },
+        handler:controllers.postCreateAccount
+    },
+
     {
         method: 'POST',
         path:'/login',
@@ -18,6 +35,16 @@ routes=[
             }
         },
         handler: controllers.postLogin
+    },
+    {
+        method: 'GET',
+        path:'/logout',
+        options: {
+            auth: {
+                mode: 'try'
+            }
+        },
+        handler: controllers.logout
     },
     {
         method: 'GET',

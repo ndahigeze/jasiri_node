@@ -15,8 +15,48 @@ exports.postLogin = async (req,h ) => {
             return h.redirect('/contacts');
     }).catch((err)=>{
         console.log(err)
-        return h.redirect('/login');
+        return h.redirect('/');
     })
+}
+
+exports.getCreateAccount = (req,h)=>{
+    return h.view('sign_up');
+}
+
+exports.postCreateAccount = (req,h)=>{
+    const payload=req.payload
+    let user=new User(payload.username,payload.password,null)
+    return User.findByUsername(payload.username)
+        .then(res=>{
+            if(res){
+                return {res:res,exist:true}
+            }else{
+                return user.save()
+                    .then(res=>{
+                        return {created:true}
+                    })
+                    .catch(err=>{
+                        return {error:true}
+                    })
+            }
+    }).then(res=>{
+        if(res.exist){
+            return {exist:true}
+        }else{
+            return {success:true};
+        }
+
+    }).catch(err=>{
+        return h.redirect('/create_account');
+    })
+
+
+
+}
+
+exports.logout = (req,h)=>{
+    req.cookieAuth.set({username:'Anonymous', _id:'Anonymous'});
+    return h.redirect('/');
 }
 
 
@@ -77,7 +117,7 @@ exports.deleteContact = (req,h)=>{
 }
 
 exports.getDuplicates = (req,h)=>{
-    return Contact.getDuplicate()
+    return Contact.getDuplicate(req.state.sid._id)
         .then(res=>{
             return res
         }).catch(err=>{

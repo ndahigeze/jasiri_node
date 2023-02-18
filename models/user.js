@@ -5,7 +5,7 @@ const ObjectId = mongodb.ObjectId;
 
 
 class User{
-    constructor(username,id, password) {
+    constructor(username, password,id) {
         this.username = username
         this.password = password
         this._id= id ? new mongodb.ObjectId(id):null
@@ -23,6 +23,16 @@ class User{
         const db = getDb();
         return db.collection('users')
             .findOne({_id:new ObjectId(userId)})
+            .then(user=>{
+                return user;
+            }).catch(err=>console.log(userId))
+
+    }
+
+    static findByUsername(username){
+        const db = getDb();
+        return db.collection('users')
+            .findOne({username:username})
             .then(user=>{
                 return user;
             }).catch(err=>console.log(userId))

@@ -1,6 +1,5 @@
 'use strict';
 const Vision = require('@hapi/vision');
-const Bcrypt = require('bcrypt');
 const Hapi = require('@hapi/hapi');
 const mongoConnect = require('./util/database').mongoConnect;
 const User = require('./models/user')
@@ -33,7 +32,7 @@ const start = async () => {
             password:process.env.SESSION_PASSWORD,
             isSecure: false
         },
-        redirectTo: '/login',
+        redirectTo: '/',
         validateFunc: async (request, session) => {
             return User.findById(session._id)
                 .then(user=>{

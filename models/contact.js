@@ -30,10 +30,10 @@ class Contact {
             })
             .catch(err=>console.log(err));
     }
-    static  fetchAll(){
+    static  fetchAll(userId){
         const db = getDb();
         return db.collection('contacts')
-            .find()
+            .find({userId:userId})
             .toArray()
             .then(contacts =>{
                 return contacts
@@ -89,10 +89,10 @@ class Contact {
 
 
 
-    static getDuplicate(){
+    static getDuplicate(userId){
         let all=[]
         let duplicate_index=[]
-        return this.fetchAll()
+        return this.fetchAll(userId)
             .then(res=>{
                 let temp=res
                 res.forEach((el)=>{
