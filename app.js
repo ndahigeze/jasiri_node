@@ -11,7 +11,7 @@ const Inert = require('@hapi/inert');
 require("dotenv").config();
 
 
-const server = Hapi.server({port: 4000 });
+const server = Hapi.server({port: process.env.PORT });
 
 const start = async () => {
 
