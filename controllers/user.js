@@ -13,14 +13,13 @@ exports.postLogin = async (req,h ) => {
         .then((res) =>{
             if(res){
                 req.cookieAuth.set({username:res.username, _id:res._id});
-                return h.redirect('/contacts');
+                return {success:true}
             }  else{
-                return h.redirect('/');
+                return {wrong_credentials:true}
             }
 
     }).catch((err)=>{
-        console.log(err)
-        return h.redirect('/');
+        return {error:true}
     })
 }
 

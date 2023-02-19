@@ -1,24 +1,70 @@
 <%- include('./includes/head.ejs') %>
-
 </head>
 <body>
- <div class="container-fluid">
+ <div class="container-fluid" id="app">
      <%- include('./includes/home_head.ejs') %>
      <div class="col-md-4 offset-3 mt-8">
          <div class="card">
              <div class="card-header d-flex justify-content-center">Login</div>
              <div class="card-body justify-content-center">
-                 <form method="post" action="/login">
+                 <form @submit.prevent="login">
                      <label>Email</label>
-                     <input type="text" name="username" class="form-control">
+                     <input type="text" v-model="user_data.username" name="username" class="form-control" required>
                      <br>
                      <label>Password</label>
-                     <input type="password" name="password" class="form-control">
+                     <input type="password" v-model="user_data.password" name="password" class="form-control" required>
                      <br>
                      <button type="submit" class="btn btn-primary">Login</button>
+                     <div class="text-danger d-flex justify-content-center" v-if="error">{{message}}</div>
                  </form>
              </div>
+
          </div>
      </div>
  </div>
+
+ <script>
+     const { createApp } = Vue
+     createApp({
+         data(){
+             return {
+                 user_data:{
+                     username:"",
+                     password:"",
+                 },
+                 error:false,
+                 message:""
+             }
+         },
+         methods:{
+
+             login:function () {
+                 let vue_obj=this
+                 axios.post('/login',this.user_data)
+                     .then(function (response) {
+                         if(response.data.success){
+                             location.href='/contacts'
+                         }else if(response.data.wrong_credentials){
+                             vue_obj.error=true
+                             vue_obj.message="Wrong credentials"
+                         }else if(response.data.error){
+                             vue_obj.error=true
+                             vue_obj.message="Error Occurred, Try again later"
+                         }
+                     })
+                     .catch(function (error) {
+                         vue_obj.showAlert('error',"error occured, try again")
+                     })
+             },
+             showAlert:function (type,message) {
+                 Swal.fire({
+                     title: '',
+                     text: message,
+                     icon: type,
+                     confirmButtonText: 'Cool'
+                 })
+             }
+         }
+     }).mount('#app')
+ </script>
 <%- include('./includes/end.ejs') %>
