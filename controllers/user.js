@@ -2,7 +2,8 @@ const User = require('../models/user')
 const Contact = require('../models/contact')
 const mongodb = require('mongodb')
 const crypto = require('crypto');
-const salt = crypto.randomBytes(16).toString('hex');
+require("dotenv").config();
+const salt =process.env.SESSION_PASSWORD
 exports.getLogin =(request, h)=> {
     return h.view('login');
 };
@@ -12,6 +13,7 @@ exports.postLogin = async (req,h ) => {
     const { username, password } = req.payload;
     const hash = crypto.pbkdf2Sync(password, salt,
         1000, 64, `sha512`).toString(`hex`)
+    console.log(hash)
     return User.findByUsernameAndPassword(username,hash)
         .then((res) =>{
             if(res){
