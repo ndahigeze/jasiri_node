@@ -1,7 +1,8 @@
 const User = require('../models/user')
 const Contact = require('../models/contact')
 const mongodb = require('mongodb')
-
+const crypto = require('crypto');
+const salt = crypto.randomBytes(16).toString('hex');
 exports.getLogin =(request, h)=> {
     return h.view('login');
 };
@@ -9,7 +10,9 @@ exports.getLogin =(request, h)=> {
 
 exports.postLogin = async (req,h ) => {
     const { username, password } = req.payload;
-    return User.findByUsernameAndPassword(username,password)
+    const hash = crypto.pbkdf2Sync(password, salt,
+        1000, 64, `sha512`).toString(`hex`)
+    return User.findByUsernameAndPassword(username,hash)
         .then((res) =>{
             if(res){
                 req.cookieAuth.set({username:res.username, _id:res._id});
@@ -29,7 +32,10 @@ exports.getCreateAccount = (req,h)=>{
 
 exports.postCreateAccount = (req,h)=>{
     const payload=req.payload
-    let user=new User(payload.username,payload.password,null)
+    const hash = crypto.pbkdf2Sync(payload.password, salt,
+        1000, 64, `sha512`).toString(`hex`)
+
+    let user=new User(payload.username,hash,null)
     return User.findByUsername(payload.username)
         .then(res=>{
             if(res){

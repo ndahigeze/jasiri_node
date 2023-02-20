@@ -19,6 +19,7 @@
     "@hapi/vision": "^7.0.1",
     "@hapi/yar": "^11.0.1",
     "bcrypt": "^5.1.0",
+    "crypto": "^1.0.1",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",
     "handlebars": "^4.7.7",
