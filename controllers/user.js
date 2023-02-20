@@ -20,7 +20,6 @@ exports.postLogin = async (req,h ) => {
             }  else{
                 return {wrong_credentials:true}
             }
-
     }).catch((err)=>{
         return {error:true}
     })

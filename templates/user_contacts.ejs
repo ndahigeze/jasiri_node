@@ -129,19 +129,20 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
-                    <label>First Name</label>
-                    <input type="text" placeholder="first name" v-model="new_contact.first_name" class="form-control">
-                    <br>
-                    <label>Last Name</label>
-                    <input type="text" placeholder="Last name" v-model="new_contact.last_name" class="form-control">
-                    <br>
-
+                  <form @submit.prevent="create_contact">
+                      <label>First Name</label>
+                      <input type="text" minlength="3" placeholder="first name" v-model="new_contact.first_name" class="form-control" required>
+                      <br>
+                      <label>Last Name</label>
+                      <input type="text" minlength="3" placeholder="Last name" v-model="new_contact.last_name" class="form-control" required>
+                      <br>
+                      <div class="d-flex justify-content-center">
+                          <button type="button" class="btn btn-secondary m-2" data-bs-dismiss="modal" id="closeModal">Close</button>
+                          <button type="submit" class="btn btn-primary m-2">Save changes</button>
+                      </div>
+                  </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModal">Close</button>
-                    <button type="button" class="btn btn-primary" @click="create_contact">Save changes</button>
-                </div>
+
             </div>
         </div>
     </div>
@@ -155,19 +156,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" v-model="new_contact._id">
-                    <label>First Name</label>
-                    <input type="text" placeholder="first name" v-model="new_contact.first_name" class="form-control">
-                    <br>
-                    <label>Last Name</label>
-                    <input type="text" placeholder="Last name" v-model="new_contact.last_name" class="form-control">
-                    <br>
+                    <form @submit.prevent="updateContact">
+                        <input type="hidden" v-model="new_contact._id">
+                        <label>First Name</label>
+                        <input type="text" minlength="3"  placeholder="first name" v-model="new_contact.first_name" class="form-control" required>
+                        <br>
+                        <label>Last Name</label>
+                        <input type="text" minlength="3" placeholder="Last name" v-model="new_contact.last_name" class="form-control" required>
+                        <br>
+                        <div class="d-flex justify-content-center">
+                            <button type="button" class="btn btn-secondary m-2" data-bs-dismiss="modal" id="closeUpdateModal" @click="get_contacts()">Close</button>
+                            <button type="submit" class="btn btn-primary m-2" >Submit</button>
+                        </div>
+                    </form>
 
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeUpdateModal" @click="get_contacts()">Close</button>
-                    <button type="button" class="btn btn-primary" @click="updateContact">Submit</button>
-                </div>
+
             </div>
         </div>
     </div>
@@ -237,7 +241,7 @@
                     this.addNumberMsg="Duplicate Number"
                     return
                 }
-
+                this.addNumberError=false
                 this.selected_contact.contact_numbers.push(this.new_number)
                 axios.post('/add_number',this.selected_contact)
                     .then(function (response) {
@@ -264,6 +268,7 @@
                    this.addEmailMsg="Duplicate Email"
                    return
                 }
+                this.addEmailError=false
                 this.selected_contact.emails.push(this.new_email)
                 axios.post('/add_email',this.selected_contact)
                     .then(function (response) {
