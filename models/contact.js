@@ -11,13 +11,15 @@ class Contact {
         this.contact_numbers=contact_numbers;
     }
     save(){
+
         const db = getDb();
         let dbOp;
         if(this._id){
+            let updated
             dbOp=db.collection("contacts")
                 .updateOne(
                     {'_id': this._id},
-                    {$set:this}
+                    {$set:this.makeUpdatedObject(this)}
                 )
         }else{
 
@@ -29,6 +31,19 @@ class Contact {
                 console.log(result)
             })
             .catch(err=>console.log(err));
+    }
+    makeUpdatedObject(obj){
+        let updatedObject={
+            first_name:obj.first_name,
+            last_name:obj.last_name,
+        }
+        if(obj.emails.length>0){
+            updatedObject.emails=obj.emails
+        }
+        if(obj.contact_numbers.length>0){
+            updatedObject.contact_numbers=obj.contact_numbers
+        }
+        return updatedObject
     }
     static  fetchAll(userId){
         const db = getDb();
