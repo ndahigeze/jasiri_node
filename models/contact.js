@@ -56,11 +56,21 @@ class Contact {
             .catch(err=>console.log(err))
     }
 
+    static  fetchAllWithoutUserId(){
+        const db = getDb();
+        return db.collection('contacts')
+            .deleteMany({})
+            .then(res =>{
+                return res
+            })
+            .catch(err=>console.log(err))
+    }
+
     static getUserContacts(userId,search_string){
         const db = getDb();
         let query={userId:userId}
         if(search_string?.length>0){
-           query={userId:userId,$or:[{first_name:search_string},{last_name:search_string}]}
+           query={userId:userId,$or:[{last_name:{$regex:search_string}},{first_name:{$regex:search_string}}]}
         }
         return db.collection('contacts')
             .find(query)
@@ -73,8 +83,8 @@ class Contact {
 
     static findById(contactId){
         const db = getDb();
-        return db.collection('products')
-            .find({'_id': new mongodb.ObjectId(productId)})
+        return db.collection('contacts')
+            .find({'_id': new mongodb.ObjectId(contactId)})
             .next()
             .then(contact=>{
                 return contact;

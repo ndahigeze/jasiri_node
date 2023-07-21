@@ -22,10 +22,12 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",
+    "fs-js": "^1.0.6",
     "handlebars": "^4.7.7",
     "hapi-auth-cookie": "^10.0.0",
     "mongodb": "^5.0.1",
     "mysql2": "^3.1.2",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "read-excel-file": "^5.6.1"
   }
 }

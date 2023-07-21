@@ -2,6 +2,9 @@ const User = require('../models/user')
 const Contact = require('../models/contact')
 const mongodb = require('mongodb')
 const crypto = require('crypto');
+const readXlsxFile = require('read-excel-file/node')
+const fs = require('fs-js')
+
 require("dotenv").config();
 const salt =process.env.SESSION_PASSWORD
 exports.getLogin =(request, h)=> {
@@ -13,7 +16,6 @@ exports.postLogin = async (req,h ) => {
     const { username, password } = req.payload;
     const hash = crypto.pbkdf2Sync(password, salt,
         1000, 64, `sha512`).toString(`hex`)
-    console.log(hash)
     return User.findByUsernameAndPassword(username,hash)
         .then((res) =>{
             if(res){
@@ -198,4 +200,37 @@ exports.addNumberOrEmail=(req,h)=>{
         }).catch(err=> {
             return 'errod occured'
         })
+}
+
+
+
+exports.deleteAllContacts=(req,h)=>{
+   return Contact.fetchAllWithoutUserId()
+        .then(res=>{
+            console.log(res)
+            return {"error":false}
+        }).catch(err=>{
+            return {"error":true}
+    })
+}
+
+exports.getReportBuilder=(req,h)=>{
+    return h.view('create_report')
+}
+
+exports.postDataToGenerateReport=(req,h)=>{
+    const { payload } = req
+    // console.log(payload)
+    readXlsxFile(payload.image).then((rows) => {
+        console.log(rows)
+     })
+    // fs.writeFile('./upload/test.excel', payload.image, err => {
+    //     if (err) {
+    //      reject(err)
+    //     }
+       
+
+    //     resolve({ message: 'Upload successfully!' })
+    //  })
+    return {"msg":"success"}
 }

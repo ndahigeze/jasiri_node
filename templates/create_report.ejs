@@ -1,0 +1,54 @@
+<%- include('./includes/head.ejs') %>
+</head>
+<body>
+    <div class="container-fluid" id="app">
+        <%- include('./includes/home_head.ejs') %>
+        <div class="col-md-4 offset-3 mt-8">
+            <form @submit.prevent="upload">
+                <input type="file" id="fileToUpload" class="form-control"  />
+                <button type="submit" class="form-control mt-2">Submit</button>
+            </form>
+        </div>
+        
+    </div>
+    <script>
+        const { createApp } = Vue
+        createApp({
+            data(){
+                return {
+                }
+            },
+            methods:{
+                upload:function () {
+                    let vue_obj=this
+                    var formData = new FormData();
+                    var imagefile = document.querySelector('#fileToUpload');
+                    formData.append("image", imagefile.files[0]);
+                    axios.post(
+                        '/report-data-upload',
+                        formData,
+                        {
+                            headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                     }
+                    )
+                        .then(function (res) {
+                          console.log(res)
+                        })
+                        .catch(function (error) {
+                            vue_obj.showAlert('error',"error occured, try again")
+                        })
+                },
+                showAlert:function (type,message) {
+                    Swal.fire({
+                        title: '',
+                        text: message,
+                        icon: type,
+                        confirmButtonText: 'Cool'
+                    })
+                }
+            }
+        }).mount('#app')
+    </script>
+<%- include('./includes/end.ejs') %>

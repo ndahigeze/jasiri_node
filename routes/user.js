@@ -11,6 +11,29 @@ routes=[
     },
     {
         method: 'GET',
+        path: '/report-builder',
+        options: {
+            auth: false
+        },
+        handler:controllers.getReportBuilder
+    },
+    {
+        method: 'POST',
+        path: '/report-data-upload',
+        options: {
+            auth: false,
+            payload:{
+                parse: true,
+                multipart: {
+                    output: 'stream'
+                },
+            }
+        },
+        handler:controllers.postDataToGenerateReport
+    },
+    
+    {
+        method: 'GET',
         path: '/create_account',
         options: {
             auth: false
@@ -92,6 +115,11 @@ routes=[
         method: 'POST',
         path: '/add_email',
         handler:controllers.addNumberOrEmail
+    },
+    {
+        method:'DELETE',
+        path:"/delete_all_contacts",
+        handler:controllers.deleteAllContacts
     }
 
 ]
