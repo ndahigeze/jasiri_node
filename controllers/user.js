@@ -130,7 +130,7 @@ exports.deleteContact = (req,h)=>{
 }
 
 exports.getDuplicates = (req,h)=>{
-    return Contact.getDuplicate(req.state.sid._id)
+    return Contact.getDuplicate((typeof req.state.sid._id==='undefined')?req.state.sid:req.state.sid._id)
         .then(res=>{
             return res
         }).catch(err=>{

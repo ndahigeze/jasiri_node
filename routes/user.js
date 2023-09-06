@@ -78,7 +78,12 @@ routes=[
     {
         method: 'GET',
         path:'/search_contacts',
-        handler: controllers.getAllContacts
+        handler: controllers.getAllContacts,
+        options: {
+            auth: {
+                mode: 'try'
+            }
+        },
     },
     {
         method: 'POST',
